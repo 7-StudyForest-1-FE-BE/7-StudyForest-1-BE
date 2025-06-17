@@ -1,4 +1,5 @@
 const express = require("express");
+const mongoose = require("mongoose"); // 추가된 import
 const router = express.Router();
 const Timer = require("../models/Timer");
 const User = require("../models/User");
@@ -19,7 +20,8 @@ router.get("/user/:userId", async (req, res) => {
   try {
     const timers = await Timer.find({ userId: req.params.userId })
       .populate("studyId")
-      .sort({ createdAt: -1 }); // 최신순 정렬
+      .populate("userId")
+      .sort({ createdAt: -1 });
     res.json(timers);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -31,7 +33,7 @@ router.get("/study/:studyId", async (req, res) => {
   try {
     const timers = await Timer.find({ studyId: req.params.studyId })
       .populate("userId")
-      .sort({ createdAt: -1 }); // 최신순 정렬
+      .sort({ createdAt: -1 });
     res.json(timers);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -74,6 +76,13 @@ router.get("/:id", async (req, res) => {
 // 새 타이머 기록 생성
 router.post("/", async (req, res) => {
   try {
+    // 입력값 검증
+    if (!req.body.duration || !req.body.studyId || !req.body.userId) {
+      return res.status(400).json({
+        message: "duration, studyId, userId는 필수 입력값입니다",
+      });
+    }
+
     // 사용자와 스터디가 존재하는지 확인
     const user = await User.findById(req.body.userId);
     const study = await Study.findById(req.body.studyId);
@@ -85,8 +94,8 @@ router.post("/", async (req, res) => {
       return res.status(404).json({ message: "스터디를 찾을 수 없습니다" });
     }
 
-    // 포인트 계산 로직 (예: 1분당 1포인트)
-    const earnedPoints = Math.floor(req.body.duration / 60); // duration이 초단위라고 가정
+    // 포인트 계산 로직
+    const earnedPoints = Math.floor(req.body.duration / 60);
 
     const timer = new Timer({
       duration: req.body.duration,
@@ -165,8 +174,10 @@ router.delete("/:id", async (req, res) => {
 
     // 사용자 포인트에서 해당 포인트 차감
     const user = await User.findById(timer.userId);
-    user.points -= timer.earnedPoints;
-    await user.save();
+    if (user) {
+      user.points = Math.max(0, user.points - timer.earnedPoints); // 음수 방지
+      await user.save();
+    }
 
     await Timer.findByIdAndDelete(req.params.id);
     res.json({ message: "타이머 기록이 삭제되었습니다" });
@@ -179,7 +190,7 @@ router.delete("/:id", async (req, res) => {
 router.get("/stats/user/:userId", async (req, res) => {
   try {
     const stats = await Timer.aggregate([
-      { $match: { userId: mongoose.Types.ObjectId(req.params.userId) } },
+      { $match: { userId: new mongoose.Types.ObjectId(req.params.userId) } },
       {
         $group: {
           _id: null,
