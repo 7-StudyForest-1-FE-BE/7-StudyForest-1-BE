@@ -1,0 +1,120 @@
+const express = require("express");
+const router = express.Router();
+const Emoji = require("../models/Emoji");
+const Study = require("../models/Study");
+
+// 모든 이모지 조회
+router.get("/", async (req, res) => {
+  try {
+    const emojis = await Emoji.find().populate("studyId");
+    res.json(emojis);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// 특정 스터디의 이모지들 조회
+router.get("/study/:studyId", async (req, res) => {
+  try {
+    const emojis = await Emoji.find({ studyId: req.params.studyId });
+    res.json(emojis);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// 특정 이모지 조회
+router.get("/:id", async (req, res) => {
+  try {
+    const emoji = await Emoji.findById(req.params.id).populate("studyId");
+    if (!emoji) {
+      return res.status(404).json({ message: "이모지를 찾을 수 없습니다" });
+    }
+    res.json(emoji);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// 새 이모지 생성
+router.post("/", async (req, res) => {
+  try {
+    // 스터디가 존재하는지 확인
+    const study = await Study.findById(req.body.studyId);
+    if (!study) {
+      return res.status(404).json({ message: "스터디를 찾을 수 없습니다" });
+    }
+
+    const emoji = new Emoji({
+      emoji: req.body.emoji,
+      studyId: req.body.studyId,
+      checked: req.body.checked || false,
+    });
+
+    const newEmoji = await emoji.save();
+
+    // 스터디의 emojis 배열에 추가
+    study.emojis.push(newEmoji._id);
+    await study.save();
+
+    res.status(201).json(newEmoji);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// 이모지 체크 상태 토글
+router.patch("/:id/toggle", async (req, res) => {
+  try {
+    const emoji = await Emoji.findById(req.params.id);
+    if (!emoji) {
+      return res.status(404).json({ message: "이모지를 찾을 수 없습니다" });
+    }
+
+    emoji.checked = !emoji.checked;
+    const updatedEmoji = await emoji.save();
+    res.json(updatedEmoji);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// 이모지 정보 업데이트
+router.patch("/:id", async (req, res) => {
+  try {
+    const emoji = await Emoji.findById(req.params.id);
+    if (!emoji) {
+      return res.status(404).json({ message: "이모지를 찾을 수 없습니다" });
+    }
+
+    if (req.body.emoji) emoji.emoji = req.body.emoji;
+    if (req.body.checked !== undefined) emoji.checked = req.body.checked;
+
+    const updatedEmoji = await emoji.save();
+    res.json(updatedEmoji);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// 이모지 삭제
+router.delete("/:id", async (req, res) => {
+  try {
+    const emoji = await Emoji.findById(req.params.id);
+    if (!emoji) {
+      return res.status(404).json({ message: "이모지를 찾을 수 없습니다" });
+    }
+
+    // 스터디의 emojis 배열에서 제거
+    await Study.findByIdAndUpdate(emoji.studyId, {
+      $pull: { emojis: emoji._id },
+    });
+
+    await Emoji.findByIdAndDelete(req.params.id);
+    res.json({ message: "이모지가 삭제되었습니다" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+module.exports = router;
