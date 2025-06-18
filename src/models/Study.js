@@ -24,7 +24,7 @@ const studySchema = new mongoose.Schema(
       min: 4,
       max: 12,
     },
-    bgTheme: {
+    bg: {
       type: Number,
       default: 0,
     },
