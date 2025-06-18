@@ -7,9 +7,18 @@ const habitSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    checked: {
-      type: Boolean,
-      default: false,
+    checkedDays: {
+      type: Map,
+      of: Boolean,
+      default: {
+        월: false,
+        화: false,
+        수: false,
+        목: false,
+        금: false,
+        토: false,
+        일: false,
+      },
     },
     studyId: {
       type: mongoose.Schema.Types.ObjectId,

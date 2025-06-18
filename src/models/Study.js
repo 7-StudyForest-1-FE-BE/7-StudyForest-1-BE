@@ -11,9 +11,22 @@ const studySchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    bg: {
+    nickname: {
       type: String,
-      default: "#ffffff",
+      required: true,
+      trim: true,
+      min: 3,
+      max: 10,
+    },
+    password: {
+      type: String,
+      required: true,
+      min: 4,
+      max: 12,
+    },
+    bgTheme: {
+      type: Number,
+      default: 0,
     },
     habits: [
       {
