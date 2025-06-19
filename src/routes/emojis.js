@@ -1,7 +1,8 @@
-const express = require("express");
-const router = express.Router();
-const Emoji = require("../models/Emoji");
-const Study = require("../models/Study");
+import { Router } from "express";
+import Emoji from "../models/Emoji.js";
+import Study from "../models/Study.js";
+
+const router = Router();
 
 // 모든 이모지 조회
 router.get("/", async (req, res) => {
@@ -117,4 +118,4 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

@@ -1,11 +1,11 @@
-const express = require("express");
-const router = express.Router();
-const Study = require("../models/Study");
-const Habit = require("../models/Habit");
-const Emoji = require("../models/Emoji");
-const Timer = require("../models/Timer");
-const bgThemes = require("../config/bgThemes.js");
+import { Router } from "express";
+import Study from "../models/Study.js";
+import Habit from "../models/Habit.js";
+import Emoji from "../models/Emoji.js";
+import Timer from "../models/Timer.js";
+import bgThemes from "../config/bgThemes.js";
 
+const router = Router();
 router.get("/", async (req, res) => {
   try {
     const studies = await Study.find().populate("habits").populate("emojis");
@@ -124,4 +124,4 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

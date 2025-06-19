@@ -1,7 +1,7 @@
-const express = require("express");
-const router = express.Router();
-const User = require("../models/User"); // 스키마 파일 경로에 맞게 수정
+import { Router } from "express";
+import User from "../models/User.js";
 
+const router = Router();
 // 모든 사용자 조회
 router.get("/", async (req, res) => {
   try {
@@ -86,4 +86,4 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

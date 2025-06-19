@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const timerSchema = new mongoose.Schema(
   {
@@ -28,4 +28,6 @@ const timerSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("Timer", timerSchema);
+const Timer = mongoose.model("Timer", timerSchema);
+
+export default Timer;
