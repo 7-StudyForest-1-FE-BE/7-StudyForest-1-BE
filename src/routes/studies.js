@@ -3,21 +3,21 @@ import Study from "../models/Study.js";
 import Habit from "../models/Habit.js";
 import Emoji from "../models/Emoji.js";
 import Timer from "../models/Timer.js";
-import bgThemes from "../config/bgThemes.js";
 
 const router = Router();
 
 router.get("/", async (req, res) => {
   try {
-    const studies = await Study.find().populate("habits").populate("emojis");
+    const offset = parseInt(req.query.offset) || 0;
+    const limit = parseInt(req.query.limit) || 6;
 
-    const studiesWithThemes = studies.map((study) => {
-      const studyObj = study.toObject();
-      studyObj.theme = bgThemes[study.bg] || null;
-      return studyObj;
-    });
+    const studies = await Study.find()
+      .skip(offset)
+      .limit(limit)
+      .populate("habits")
+      .populate("emojis");
 
-    res.json(studiesWithThemes);
+    res.json(studies);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -34,10 +34,7 @@ router.get("/:id", async (req, res) => {
       return res.status(404).json({ message: "스터디를 찾을 수 없습니다" });
     }
 
-    const studyObj = study.toObject();
-    studyObj.theme = bgThemes[study.bg] || null;
-
-    res.json(studyObj);
+    res.json(study);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
