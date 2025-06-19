@@ -1,10 +1,10 @@
-const express = require("express");
-const mongoose = require("mongoose"); // 추가된 import
-const router = express.Router();
-const Timer = require("../models/Timer");
-const User = require("../models/User");
-const Study = require("../models/Study");
+import { Router } from "express";
+import mongoose from "mongoose"; // 추가된 import
+import Timer from "../models/Timer.js";
+import User from "../models/User.js";
+import Study from "../models/Study.js";
 
+const router = Router();
 // 모든 타이머 기록 조회
 router.get("/", async (req, res) => {
   try {
@@ -209,4 +209,4 @@ router.get("/stats/user/:userId", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

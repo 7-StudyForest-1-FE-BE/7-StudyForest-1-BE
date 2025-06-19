@@ -36,5 +36,4 @@ const bgThemes = [
     value: "bg4.jpg",
   },
 ];
-
-module.exports = bgThemes;
+export default bgThemes;

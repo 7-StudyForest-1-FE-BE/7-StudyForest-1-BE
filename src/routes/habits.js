@@ -1,8 +1,8 @@
-const express = require("express");
-const router = express.Router();
-const Habit = require("../models/Habit");
-const Study = require("../models/Study");
+import { Router } from "express";
+import Habit from "../models/Habit.js";
+import Study from "../models/Study.js";
 
+const router = Router();
 // 모든 습관 조회
 router.get("/", async (req, res) => {
   try {
@@ -116,5 +116,4 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
-
-module.exports = router;
+export default router;
