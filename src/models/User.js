@@ -7,11 +7,6 @@ const userSchema = new mongoose.Schema(
       required: true,
       min: 1,
     },
-    points: {
-      type: Number,
-      default: 0,
-      min: 0,
-    },
   },
   {
     timestamps: true,

@@ -6,6 +6,7 @@ import Timer from "../models/Timer.js";
 import bgThemes from "../config/bgThemes.js";
 
 const router = Router();
+
 router.get("/", async (req, res) => {
   try {
     const studies = await Study.find().populate("habits").populate("emojis");
@@ -92,26 +93,7 @@ router.delete("/:id", async (req, res) => {
       return res.status(404).json({ message: "스터디를 찾을 수 없습니다" });
     }
 
-    const timers = await Timer.find({ studyId: req.params.id }).populate(
-      "userId"
-    );
-
-    // 사용자 포인트 차감
-    const userPointUpdates = {};
-    timers.forEach((timer) => {
-      const userId = timer.userId._id.toString();
-      if (!userPointUpdates[userId]) {
-        userPointUpdates[userId] = { user: timer.userId, points: 0 };
-      }
-      userPointUpdates[userId].points += timer.earnedPoints;
-    });
-
-    for (const userId in userPointUpdates) {
-      const { user, points } = userPointUpdates[userId];
-      user.points = Math.max(0, user.points - points);
-      await user.save();
-    }
-
+    // 관련 데이터 삭제
     await Habit.deleteMany({ studyId: req.params.id });
     await Emoji.deleteMany({ studyId: req.params.id });
     await Timer.deleteMany({ studyId: req.params.id });
