@@ -38,7 +38,7 @@ for (const study of studyMock) {
     title: study.title,
     description: study.description,
     points: study.points,
-    theme: study.theme,
+    bg: study.bg,
     habits: [],
     emojis: [],
     createdAt: new Date(study.createdAt),
@@ -50,7 +50,7 @@ for (const study of studyMock) {
     study.habits.map((h) => ({
       title: h.title,
       checkedDays: h.checkedDays,
-      studyId: createdStudy._id, // ✅ 이거 중요!
+      studyId: createdStudy._id,
     }))
   );
 
@@ -72,9 +72,9 @@ for (const study of studyMock) {
     },
   });
 }
-
 console.log("📦 스터디/습관/이모지 더미데이터 모두 삽입 완료!");
  */
+
 // Routes 연결
 app.use("/api/users", usersRouter);
 app.use("/api/studies", studiesRouter);
