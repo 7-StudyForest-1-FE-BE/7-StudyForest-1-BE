@@ -17,11 +17,6 @@ const timerSchema = new mongoose.Schema(
       ref: "Study",
       required: true,
     },
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
   },
   {
     timestamps: true,

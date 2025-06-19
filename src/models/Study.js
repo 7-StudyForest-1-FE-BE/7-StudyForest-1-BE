@@ -28,6 +28,17 @@ const studySchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    points: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    users: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
     habits: [
       {
         type: mongoose.Schema.Types.ObjectId,

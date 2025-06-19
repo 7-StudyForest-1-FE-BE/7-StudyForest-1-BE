@@ -1,66 +1,33 @@
 import { Router } from "express";
-import mongoose from "mongoose"; // 추가된 import
+import mongoose from "mongoose";
 import Timer from "../models/Timer.js";
-import User from "../models/User.js";
 import Study from "../models/Study.js";
 
 const router = Router();
-// 모든 타이머 기록 조회
+
 router.get("/", async (req, res) => {
   try {
-    const timers = await Timer.find().populate("studyId").populate("userId");
+    const timers = await Timer.find().populate("studyId");
     res.json(timers);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// 특정 사용자의 타이머 기록 조회
-router.get("/user/:userId", async (req, res) => {
-  try {
-    const timers = await Timer.find({ userId: req.params.userId })
-      .populate("studyId")
-      .populate("userId")
-      .sort({ createdAt: -1 });
-    res.json(timers);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// 특정 스터디의 타이머 기록 조회
 router.get("/study/:studyId", async (req, res) => {
   try {
-    const timers = await Timer.find({ studyId: req.params.studyId })
-      .populate("userId")
-      .sort({ createdAt: -1 });
+    const timers = await Timer.find({ studyId: req.params.studyId }).sort({
+      createdAt: -1,
+    });
     res.json(timers);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// 특정 사용자의 특정 스터디 타이머 기록 조회
-router.get("/user/:userId/study/:studyId", async (req, res) => {
-  try {
-    const timers = await Timer.find({
-      userId: req.params.userId,
-      studyId: req.params.studyId,
-    })
-      .populate("studyId")
-      .sort({ createdAt: -1 });
-    res.json(timers);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// 특정 타이머 기록 조회
 router.get("/:id", async (req, res) => {
   try {
-    const timer = await Timer.findById(req.params.id)
-      .populate("studyId")
-      .populate("userId");
+    const timer = await Timer.findById(req.params.id).populate("studyId");
 
     if (!timer) {
       return res
@@ -73,23 +40,16 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// 새 타이머 기록 생성
 router.post("/", async (req, res) => {
   try {
-    // 입력값 검증
-    if (!req.body.duration || !req.body.studyId || !req.body.userId) {
+    if (!req.body.duration || !req.body.studyId) {
       return res.status(400).json({
-        message: "duration, studyId, userId는 필수 입력값입니다",
+        message: "duration, studyId는 필수 입력값입니다",
       });
     }
 
-    // 사용자와 스터디가 존재하는지 확인
-    const user = await User.findById(req.body.userId);
     const study = await Study.findById(req.body.studyId);
 
-    if (!user) {
-      return res.status(404).json({ message: "사용자를 찾을 수 없습니다" });
-    }
     if (!study) {
       return res.status(404).json({ message: "스터디를 찾을 수 없습니다" });
     }
@@ -101,19 +61,18 @@ router.post("/", async (req, res) => {
       duration: req.body.duration,
       earnedPoints: earnedPoints,
       studyId: req.body.studyId,
-      userId: req.body.userId,
     });
 
     const newTimer = await timer.save();
 
-    // 사용자 포인트 업데이트
-    user.points += earnedPoints;
-    await user.save();
+    // 스터디 포인트 업데이트
+    study.points += earnedPoints;
+    await study.save();
 
     // populate해서 반환
-    const populatedTimer = await Timer.findById(newTimer._id)
-      .populate("studyId")
-      .populate("userId");
+    const populatedTimer = await Timer.findById(newTimer._id).populate(
+      "studyId"
+    );
 
     res.status(201).json(populatedTimer);
   } catch (error) {
@@ -145,16 +104,16 @@ router.patch("/:id", async (req, res) => {
 
     const updatedTimer = await timer.save();
 
-    // 포인트가 변경되었다면 사용자 포인트도 업데이트
+    // 포인트가 변경되었다면 스터디 포인트도 업데이트
     if (oldEarnedPoints !== updatedTimer.earnedPoints) {
-      const user = await User.findById(timer.userId);
-      user.points = user.points - oldEarnedPoints + updatedTimer.earnedPoints;
-      await user.save();
+      const study = await Study.findById(timer.studyId);
+      study.points = study.points - oldEarnedPoints + updatedTimer.earnedPoints;
+      await study.save();
     }
 
-    const populatedTimer = await Timer.findById(updatedTimer._id)
-      .populate("studyId")
-      .populate("userId");
+    const populatedTimer = await Timer.findById(updatedTimer._id).populate(
+      "studyId"
+    );
 
     res.json(populatedTimer);
   } catch (error) {
@@ -172,11 +131,11 @@ router.delete("/:id", async (req, res) => {
         .json({ message: "타이머 기록을 찾을 수 없습니다" });
     }
 
-    // 사용자 포인트에서 해당 포인트 차감
-    const user = await User.findById(timer.userId);
-    if (user) {
-      user.points = Math.max(0, user.points - timer.earnedPoints); // 음수 방지
-      await user.save();
+    // 스터디 포인트에서 해당 포인트 차감
+    const study = await Study.findById(timer.studyId);
+    if (study) {
+      study.points = Math.max(0, study.points - timer.earnedPoints); // 음수 방지
+      await study.save();
     }
 
     await Timer.findByIdAndDelete(req.params.id);
@@ -186,11 +145,11 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-// 사용자의 총 공부 시간 조회
-router.get("/stats/user/:userId", async (req, res) => {
+// 스터디의 총 공부 시간 조회
+router.get("/stats/study/:studyId", async (req, res) => {
   try {
     const stats = await Timer.aggregate([
-      { $match: { userId: new mongoose.Types.ObjectId(req.params.userId) } },
+      { $match: { studyId: new mongoose.Types.ObjectId(req.params.studyId) } },
       {
         $group: {
           _id: null,
