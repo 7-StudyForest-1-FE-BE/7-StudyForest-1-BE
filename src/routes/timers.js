@@ -5,6 +5,13 @@ import Study from "../models/Study.js";
 
 const router = Router();
 
+// 포인트 계산 함수
+function calculateEarnedPoints(duration) {
+  const basePoints = 3;
+  const bonusPoints = Math.floor(duration / (10 * 60));
+  return basePoints + bonusPoints;
+}
+
 router.get("/", async (req, res) => {
   try {
     const timers = await Timer.find().populate("studyId");
@@ -54,8 +61,8 @@ router.post("/", async (req, res) => {
       return res.status(404).json({ message: "스터디를 찾을 수 없습니다" });
     }
 
-    // 포인트 계산 로직
-    const earnedPoints = Math.floor(req.body.duration / 60);
+    // 새로운 포인트 계산 로직 적용
+    const earnedPoints = calculateEarnedPoints(req.body.duration);
 
     const timer = new Timer({
       duration: req.body.duration,
@@ -94,8 +101,8 @@ router.patch("/:id", async (req, res) => {
 
     if (req.body.duration !== undefined) {
       timer.duration = req.body.duration;
-      // 포인트 재계산
-      timer.earnedPoints = Math.floor(req.body.duration / 60);
+      // 새로운 포인트 계산 로직으로 포인트 재계산
+      timer.earnedPoints = calculateEarnedPoints(req.body.duration);
     }
 
     if (req.body.earnedPoints !== undefined) {
