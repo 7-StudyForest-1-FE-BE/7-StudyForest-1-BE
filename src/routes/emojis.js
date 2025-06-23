@@ -64,19 +64,26 @@ router.post("/", async (req, res) => {
   }
 });
 
-// 이모지 체크 상태 토글
-router.patch("/:id/toggle", async (req, res) => {
+// 스터디 관련 이모지
+router.post("/react", async (req, res) => {
   try {
-    const emoji = await Emoji.findById(req.params.id);
-    if (!emoji) {
-      return res.status(404).json({ message: "이모지를 찾을 수 없습니다" });
-    }
+    const { studyId, emoji, action } = req.body;
 
-    emoji.checked = !emoji.checked;
-    const updatedEmoji = await emoji.save();
-    res.json(updatedEmoji);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
+    // ✅ emoji 값이 숫자여도 문자열로 변환
+    const safeEmoji = String(emoji);
+
+    const update =
+      action === "increase" ? { $inc: { count: 1 } } : { $inc: { count: -1 } };
+
+    const updated = await Emoji.findOneAndUpdate(
+      { studyId, emoji: safeEmoji },
+      update,
+      { upsert: true, new: true }
+    );
+    res.json(updated);
+  } catch (err) {
+    console.error("이모지 업데이트 실패:", err);
+    res.status(500).json({ error: "이모지 업데이트 실패" });
   }
 });
 
