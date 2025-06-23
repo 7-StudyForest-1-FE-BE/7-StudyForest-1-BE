@@ -6,9 +6,9 @@ const emojiSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    checked: {
-      type: Boolean,
-      default: false,
+    count: {
+      type: Number,
+      default: 0,
     },
     studyId: {
       type: mongoose.Schema.Types.ObjectId,
