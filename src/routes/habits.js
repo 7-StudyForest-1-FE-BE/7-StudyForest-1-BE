@@ -116,4 +116,79 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+// 습관 조회
+router.post("/today", async (req, res) => {
+  try {
+    const { studyId, password } = req.body;
+
+    const study = await Study.findById(studyId).populate("habits");
+    if (!study) {
+      return res.status(404).json({ message: "스터디를 찾을 수 없습니다" });
+    }
+
+    if (study.password !== password) {
+      return res.status(401).json({ message: "비밀번호가 일치하지 않습니다" });
+    }
+
+    res.json({ habits: study.habits });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// 스터디 상세 조회
+router.get("/:studyId", async (req, res) => {
+  try {
+    const { studyId } = req.params;
+    const { populateHabits } = req.query;
+    let studyQuery = Study.findById(studyId);
+    if (populateHabits === "true") {
+      studyQuery = studyQuery.populate("habits");
+    }
+    const study = await studyQuery.exec();
+
+    if (!study)
+      return res.status(404).json({ message: "스터디를 찾을 수 없습니다" });
+
+    res.json(study);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+router.patch("/study/:studyId/habits", async (req, res) => {
+  try {
+    console.log("studyId:", req.params.studyId);
+    console.log("habits:", req.body.habits);
+
+    const { studyId } = req.params;
+    const { habits } = req.body;
+
+    const study = await Study.findById(studyId);
+    if (!study) {
+      return res.status(404).json({ message: "스터디를 찾을 수 없습니다" });
+    }
+
+    // 기존 스터디 관련 습관 모두 삭제
+    await Habit.deleteMany({ studyId });
+
+    // 새 습관들 생성 및 study.habits 업데이트
+    const newHabits = await Promise.all(
+      habits.map(async (title) => {
+        const newHabit = new Habit({ title, studyId });
+        await newHabit.save();
+        return newHabit._id;
+      })
+    );
+
+    study.habits = newHabits;
+    await study.save();
+
+    res.json({ message: "습관 목록이 성공적으로 업데이트 되었습니다." });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 export default router;
