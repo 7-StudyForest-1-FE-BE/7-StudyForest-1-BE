@@ -65,6 +65,44 @@ router.post("/", async (req, res) => {
 });
 
 // 스터디 관련 이모지
+router.post("/add", async (req, res) => {
+  try {
+    console.log("📦 받은 바디:", req.body);
+    const { studyId, emoji, action } = req.body;
+
+    const study = await Study.findById(req.body.studyId);
+    // ✅ emoji 값이 숫자여도 문자열로 변환
+    const safeEmoji = String(emoji);
+
+    let existing = await Emoji.findOne({ studyId, emoji: safeEmoji });
+
+    if (action === "increase") {
+      if (existing) {
+        existing.count += 1;
+        await existing.save();
+      } else {
+        const newEmoji = new Emoji({
+          studyId,
+          emoji: safeEmoji,
+          count: 1, // ⭐️ 바로 count = 1
+        });
+        await newEmoji.save();
+
+        study.emojis.push(newEmoji._id);
+        await study.save();
+      }
+    }
+
+    // 업데이트된 이모지 목록 반환
+    const emojis = await Emoji.find({ studyId, count: { $gt: 0 } });
+    res.json(emojis);
+  } catch (err) {
+    console.error("이모지 등록 실패:", err);
+    res.status(500).json({ message: "이모지 등록 실패" });
+  }
+});
+
+// 스터디 관련 이모지
 router.post("/react", async (req, res) => {
   try {
     const { studyId, emoji, action } = req.body;
@@ -80,6 +118,7 @@ router.post("/react", async (req, res) => {
       update,
       { upsert: true, new: true }
     );
+    console.log("✅ 업데이트 결과:", updated);
     res.json(updated);
   } catch (err) {
     console.error("이모지 업데이트 실패:", err);
