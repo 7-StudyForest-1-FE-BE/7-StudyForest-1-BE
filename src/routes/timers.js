@@ -5,10 +5,17 @@ import Study from "../models/Study.js";
 
 const router = Router();
 
-// 포인트 계산 함수
+// 수정된 포인트 계산 함수 - 최소 10분 기준
 function calculateEarnedPoints(duration) {
+  const minRequiredTime = 10 * 60; // 10분 (600초)
+
+  // 완료한 시간이 10분 미만이면 포인트 없음
+  if (duration < minRequiredTime) {
+    return 0;
+  }
+
   const basePoints = 3;
-  const bonusPoints = Math.floor(duration / (10 * 60));
+  const bonusPoints = Math.floor(duration / (10 * 60)); // 10분당 1포인트
   return basePoints + bonusPoints;
 }
 
@@ -61,7 +68,7 @@ router.post("/", async (req, res) => {
       return res.status(404).json({ message: "스터디를 찾을 수 없습니다" });
     }
 
-    // 새로운 포인트 계산 로직 적용
+    // 수정된 포인트 계산 로직 적용 - 최소 10분 기준
     const earnedPoints = calculateEarnedPoints(req.body.duration);
 
     const timer = new Timer({
@@ -72,7 +79,7 @@ router.post("/", async (req, res) => {
 
     const newTimer = await timer.save();
 
-    // 스터디 포인트 업데이트
+    // 스터디 포인트 업데이트 (포인트가 0이어도 기록은 저장)
     study.points += earnedPoints;
     await study.save();
 
@@ -101,7 +108,7 @@ router.patch("/:id", async (req, res) => {
 
     if (req.body.duration !== undefined) {
       timer.duration = req.body.duration;
-      // 새로운 포인트 계산 로직으로 포인트 재계산
+      // 수정된 포인트 계산 로직으로 포인트 재계산
       timer.earnedPoints = calculateEarnedPoints(req.body.duration);
     }
 
