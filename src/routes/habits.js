@@ -64,15 +64,40 @@ router.post("/", async (req, res) => {
 });
 
 // 습관 체크 상태 토글
+// router.patch("/:id/toggle", async (req, res) => {
+//   try {
+//     const habit = await Habit.findById(req.params.id);
+//     if (!habit) {
+//       return res.status(404).json({ message: "습관을 찾을 수 없습니다" });
+//     }
+
+//     habit.checked = !habit.checked;
+//     const updatedHabit = await habit.save();
+//     res.json(updatedHabit);
+//   } catch (error) {
+//     res.status(400).json({ message: error.message });
+//   }
+// });
+
+// 요일별 체크 상태 토글
 router.patch("/:id/toggle", async (req, res) => {
   try {
-    const habit = await Habit.findById(req.params.id);
-    if (!habit) {
-      return res.status(404).json({ message: "습관을 찾을 수 없습니다" });
-    }
+    const { day } = req.body; // 요일(day) 정보 받기
+    if (!day) return res.status(400).json({ message: "요일(day) 필요함" });
 
-    habit.checked = !habit.checked;
+    const habit = await Habit.findById(req.params.id);
+    if (!habit)
+      return res.status(404).json({ message: "습관을 찾을 수 없습니다" });
+
+    const checkedDays = habit.checkedDays || new Map();
+
+    const current = checkedDays.get(day) || false;
+    checkedDays.set(day, !current);
+
+    habit.checkedDays = checkedDays;
+
     const updatedHabit = await habit.save();
+
     res.json(updatedHabit);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -190,5 +215,15 @@ router.patch("/study/:studyId/habits", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+// 00시 기준으로 습관 목록 체크 표시(색변한거) 초기화
+export async function resetAllHabitsCheckedDays() {
+  try {
+    await Habit.updateMany({}, { $set: { checkedDays: {} } });
+    console.log("모든 습관의 checkedDays 초기화 완료");
+  } catch (error) {
+    console.error("습관 초기화 중 오류 발생:", error);
+  }
+}
 
 export default router;
