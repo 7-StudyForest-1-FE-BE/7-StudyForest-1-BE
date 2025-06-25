@@ -25,6 +25,10 @@ const habitSchema = new mongoose.Schema(
       ref: "Study",
       required: true,
     },
+    endDate: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
