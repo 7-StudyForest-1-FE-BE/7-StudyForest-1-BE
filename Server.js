@@ -11,6 +11,8 @@ import habitsRouter from "./src/routes/habits.js";
 import emojisRouter from "./src/routes/emojis.js";
 import timersRouter from "./src/routes/timers.js";
 import { studyMock } from "./mock.js";
+import cron from "node-cron";
+import { resetAllHabitsCheckedDays } from "./src/routes/habits.js";
 
 const app = express();
 
@@ -90,4 +92,10 @@ app.get("/", (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`서버가 포트 ${PORT}에서 실행 중입니다.`);
+});
+
+// 00시에 습관 목록 체크 초기화
+cron.schedule("0 0 * * *", () => {
+  console.log("자정 00시에 습관 체크 초기화 실행");
+  resetAllHabitsCheckedDays();
 });
