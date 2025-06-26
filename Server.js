@@ -18,7 +18,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "https://studyforesttest2.netlify.app/",
+    origin: "https://studyforesttest.netlify.app/",
   })
 );
 
