@@ -16,6 +16,12 @@ import { resetAllHabitsCheckedDays } from "./src/routes/habits.js";
 
 const app = express();
 
+app.use(
+  cors({
+    origin: "*",
+  })
+);
+
 // 미들웨어 설정
 app.use(cors());
 app.use(express.json());
