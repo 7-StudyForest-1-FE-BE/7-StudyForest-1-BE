@@ -32,7 +32,10 @@ router.get("/", async (req, res) => {
       .skip(offset)
       .limit(limit)
       .populate("habits")
-      .populate("emojis");
+      .populate({
+        path: "emojis",
+        match: { count: { $gt: 0 } },
+      });
 
     res.json(studies);
   } catch (error) {
@@ -63,6 +66,7 @@ router.get("/:id", async (req, res) => {
 //최근 조회한 스터디
 router.post("/recent", async (req, res) => {
   const { ids } = req.body; // ex: [1, 2, 3]
+  console.log("🔍 POST /api/studies/recent  body.ids:", ids);
   try {
     if (!Array.isArray(ids) || ids.length === 0) {
       return res
