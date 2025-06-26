@@ -13,9 +13,22 @@ const {
 router.get("/", async (req, res) => {
   try {
     const offset = parseInt(req.query.offset) || 0;
-    const limit = parseInt(req.query.limit) || 100;
+    const limit = parseInt(req.query.limit) || 6;
+    const keyword = req.query.keyword || "";
+    const sortKey = req.query.sortKey || "latest";
 
-    const studies = await Study.find()
+    const query = keyword ? { title: { $regex: keyword, $options: "i" } } : {};
+
+    // 🔥 정렬 조건 설정
+    let sortOption = { createdAt: -1 }; // 기본 최신순
+
+    if (sortKey === "latest") sortOption = { createdAt: -1 };
+    if (sortKey === "oldest") sortOption = { createdAt: 1 };
+    if (sortKey === "higher") sortOption = { points: -1 };
+    if (sortKey === "lower") sortOption = { points: 1 };
+
+    const studies = await Study.find(query)
+      .sort(sortOption)
       .skip(offset)
       .limit(limit)
       .populate("habits")
