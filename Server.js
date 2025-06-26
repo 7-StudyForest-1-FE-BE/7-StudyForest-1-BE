@@ -16,7 +16,6 @@ import { resetAllHabitsCheckedDays } from "./src/routes/habits.js";
 
 const app = express();
 
-//프론트 netlify 주소
 app.use(
   cors({
     origin: "https://luminous-dieffenbachia-ffb73a.netlify.app/",
