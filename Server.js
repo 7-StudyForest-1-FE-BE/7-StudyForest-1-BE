@@ -18,7 +18,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "*",
+    origin: "https://luminous-dieffenbachia-ffb73a.netlify.app/",
   })
 );
 
