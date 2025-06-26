@@ -18,7 +18,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "https://tourmaline-tapioca-7427f9.netlify.app/",
+    origin: "https://studyforest-test-1.netlify.app/",
   })
 );
 
