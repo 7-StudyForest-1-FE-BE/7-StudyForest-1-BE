@@ -18,7 +18,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "https://flourishing-lokum-a59563.netlify.app",
+    origin: "https://heartfelt-semolina-b2e8b9.netlify.app",
   })
 );
 
