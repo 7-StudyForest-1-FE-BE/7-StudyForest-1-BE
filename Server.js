@@ -18,7 +18,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "https://unique-tartufo-5366ea.netlify.app",
+    origin: "https://flourishing-lokum-a59563.netlify.app",
   })
 );
 
