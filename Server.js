@@ -18,7 +18,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "https://heartfelt-semolina-b2e8b9.netlify.app",
+    origin: "https://famous-arithmetic-053686.netlify.app",
   })
 );
 
